@@ -168,25 +168,52 @@
   function widthPoints(element) {
     var rules = getElementStylesheet(element),
         intervals = {},
-        minMatch, maxMatch, min, max,
-        w, defaultWidth;
+        winMinMatch, winMaxMatch, min, max,
+        wMatch, maxwMatch, minwMatch, w, maxw, minw,
+        width, defaultWidth,
+        widthIsMaxw = false;
 
     for (var i = 0, maxi = rules.length; i < maxi; i++) {
       if ((/width:\s?(\d+)px/).test(rules[i].cssText)) {
 
-        w = parseFloat(rules[i].cssText.match(/width:\s?(\d+)px/)[1]);
+        wMatch = rules[i].cssText.match(/([^-]|\s|;|^)width:\s?(\d+)px/);
+        w = wMatch && typeof wMatch[2] !== 'undefined' ? parseFloat(wMatch[2]) : undefined;
+        maxwMatch = rules[i].cssText.match(/max-width:\s?(\d+)px/);
+        maxw = maxwMatch && typeof maxwMatch[1] !== 'undefined' ? parseFloat(maxwMatch[1]) : undefined;
+
+        if (typeof w !== 'undefined' && typeof maxw !== 'undefined') {
+          if (maxw < w) {
+            width = maxw;
+            widthIsMaxw = true;
+          } else {
+            width = w;
+            widthIsMaxw = false;
+          }
+        } else if (typeof w !== 'undefined') {
+          if (widthIsMaxw && width < w) {
+
+          } else {
+            width = w;
+            widthIsMaxw = false;
+          }
+        } else if (typeof maxw !== 'undefined') {
+          width = maxw;
+          widthIsMaxw = true;
+        } else {
+          width = null;
+        }
 
         if (rules[i].parentRule && rules[i].parentRule.media && rules[i].parentRule.media[0] && (/(max\-width|min\-width)/).test(rules[i].parentRule.media[0])) {
-          minMatch = rules[i].parentRule.media[0].match(/min\-width:\s?(\d+)px/);
-          maxMatch = rules[i].parentRule.media[0].match(/max\-width:\s?(\d+)px/);
+          winMinMatch = rules[i].parentRule.media[0].match(/min\-width:\s?(\d+)px/);
+          winMaxMatch = rules[i].parentRule.media[0].match(/max\-width:\s?(\d+)px/);
 
-          min = minMatch && minMatch[1] ? parseFloat(minMatch[1]) : 0;
-          max = maxMatch && maxMatch[1] ? parseFloat(maxMatch[1]) : null;
+          min = winMinMatch && winMinMatch[1] ? parseFloat(winMinMatch[1]) : 0;
+          max = winMaxMatch && winMaxMatch[1] ? parseFloat(winMaxMatch[1]) : null;
 
-          setWidthInteval(intervals, w, defaultWidth, min, max);
+          setWidthInteval(intervals, width, defaultWidth, min, max);
         } else {
-          defaultWidth = w;
-          setWidthInteval(intervals, w, defaultWidth, 0);
+          defaultWidth = width;
+          setWidthInteval(intervals, width, defaultWidth, 0);
         }
       }
     }

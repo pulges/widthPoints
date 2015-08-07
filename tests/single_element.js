@@ -52,8 +52,8 @@ QUnit.test("overWriting selectors", function(assert) {
   assert.equal(widths[0][0], 400, "got the width from css");
 });
 
-QUnit.test("max-width", function(assert) {
-  var style = ".wrap { width: 100px } .wrap { width: 400px }",
+QUnit.test("element max-width", function(assert) {
+  var style = ".wrap { max-width: 100px }",
       widths;
 
   this.stylesheet.innerHTML = style;
@@ -61,5 +61,29 @@ QUnit.test("max-width", function(assert) {
 
   assert.ok(widths && widths[0], "widths object is defined");
   assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
-  assert.equal(widths[0][0], 400, "got the width from css");
+  assert.equal(widths[0][0], 100, "got the width from css");
+});
+
+QUnit.test("element max-width and width", function(assert) {
+  var style = ".wrap { max-width: 100px ; width: 200px; }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.wrap);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.equal(widths[0][0], 100, "got the width from css");
+});
+
+QUnit.test("element max-width and width on separate declarations", function(assert) {
+  var style = ".wrap { max-width: 100px; } .wrap { width: 200px; }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.wrap);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.equal(widths[0][0], 100, "got the width from css");
 });

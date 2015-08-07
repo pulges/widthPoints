@@ -2,7 +2,7 @@ QUnit.module( "Test mediaqueries creating width waypoints", {
   beforeEach: TestingTools.initSingleElement
 });
 
-QUnit.test( "max-width case", function(assert) {
+QUnit.test( "window max-width case", function(assert) {
   var style = ".wrap { width: 200px; } @media screen and (max-width: 100px) { .wrap { width: 100px; } }",
       widths;
 
@@ -16,7 +16,7 @@ QUnit.test( "max-width case", function(assert) {
   
 });
 
-QUnit.test( "min-width case", function(assert) {
+QUnit.test( "window min-width case", function(assert) {
   var style = ".wrap { width: 200px; } @media screen and (min-width: 100px) { .wrap { width: 100px; } }",
       widths;
 
@@ -30,7 +30,7 @@ QUnit.test( "min-width case", function(assert) {
   
 });
 
-QUnit.test( "min-width and max-width case", function(assert) {
+QUnit.test( "window min-width and max-width case", function(assert) {
   var style = ".wrap { width: 200px; } @media screen and (min-width: 100px) and (max-width: 200px) { .wrap { width: 100px; } }",
       widths;
 
