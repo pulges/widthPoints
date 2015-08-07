@@ -2,6 +2,10 @@
 
   // Based on https://gist.github.com/ssafejava/6605832
 
+  var isDefined = function(variable) {
+    return typeof variable !== 'undefined';
+  }
+
   var ELEMENT_RE = /[\w-]+/g,
       ID_RE = /#[\w-]+/g,
       CLASS_RE = /\.[\w-]+/g,
@@ -142,7 +146,7 @@
   };
 
   function setWidthInteval(intervals, width, defaultWidth, start, end) {
-    var oldWidth = defaultWidth;
+    var baseWidth = Object.create(defaultWidth);
 
     if (!start) {
       start = 0;
@@ -152,25 +156,50 @@
     for (var i in intervals) {
       if (intervals.hasOwnProperty(i) && parseFloat(i)) {
         if (parseFloat(i) >= start && (!end || parseFloat(i) <= end)) {
-          oldWidth = intervals[i];
+          isDefined(intervals[i].width) && (baseWidth.width = intervals[i].width);
+          isDefined(intervals[i].min) && (baseWidth.min = intervals[i].min);
+          isDefined(intervals[i].max) && (baseWidth.max = intervals[i].max);
           delete intervals[i];
         }
       }
     }
-    
-    intervals[start] = width;
 
-    if (end && oldWidth) {
-      intervals[end] = oldWidth;
+    intervals[start] = {};
+    intervals[start].width = width && isDefined(width.width) ? width.width : baseWidth && isDefined(baseWidth.width) ? baseWidth.width : undefined;
+    intervals[start].min = width && isDefined(width.min) ? width.min : baseWidth && isDefined(baseWidth.min) ? baseWidth.min : undefined;
+    intervals[start].max = width && isDefined(width.max) ? width.max : baseWidth && isDefined(baseWidth.max) ? baseWidth.max : undefined;
+
+    if (end && baseWidth) {
+      intervals[end] = baseWidth;
     }
+  }
+
+  function resolveMinMax(intervals) {
+    var o = {}, w;
+    for(var i in intervals) {
+      if (intervals.hasOwnProperty(i)) {
+        w = intervals[i].width;
+
+        if (typeof intervals[i].max !== 'undefined') {
+          w = w ? Math.min(w, intervals[i].max) : intervals[i].max;
+        }
+
+        if (typeof intervals[i].min !== 'undefined') {
+          w = w ? Math.max(w, intervals[i].min) : intervals[i].min;
+        }
+
+        o[i] = w;
+      }
+    }
+    return o;
   }
 
   function widthPoints(element) {
     var rules = getElementStylesheet(element),
         intervals = {},
         winMinMatch, winMaxMatch, min, max,
-        wMatch, maxwMatch, minwMatch, w, maxw, minw,
-        width, defaultWidth,
+        wMatch, maxwMatch, minwMatch, w, maxw, minw, width,
+        defaultWidth = {},
         widthIsMaxw = false;
 
     for (var i = 0, maxi = rules.length; i < maxi; i++) {
@@ -180,28 +209,14 @@
         w = wMatch && typeof wMatch[2] !== 'undefined' ? parseFloat(wMatch[2]) : undefined;
         maxwMatch = rules[i].cssText.match(/max-width:\s?(\d+)px/);
         maxw = maxwMatch && typeof maxwMatch[1] !== 'undefined' ? parseFloat(maxwMatch[1]) : undefined;
+        minwMatch = rules[i].cssText.match(/min-width:\s?(\d+)px/);
+        minw = minwMatch && typeof minwMatch[1] !== 'undefined' ? parseFloat(minwMatch[1]) : undefined;
 
-        if (typeof w !== 'undefined' && typeof maxw !== 'undefined') {
-          if (maxw < w) {
-            width = maxw;
-            widthIsMaxw = true;
-          } else {
-            width = w;
-            widthIsMaxw = false;
-          }
-        } else if (typeof w !== 'undefined') {
-          if (widthIsMaxw && width < w) {
-
-          } else {
-            width = w;
-            widthIsMaxw = false;
-          }
-        } else if (typeof maxw !== 'undefined') {
-          width = maxw;
-          widthIsMaxw = true;
-        } else {
-          width = null;
-        }
+        width = {
+          min: minw,
+          max: maxw,
+          width: w
+        };
 
         if (rules[i].parentRule && rules[i].parentRule.media && rules[i].parentRule.media[0] && (/(max\-width|min\-width)/).test(rules[i].parentRule.media[0])) {
           winMinMatch = rules[i].parentRule.media[0].match(/min\-width:\s?(\d+)px/);
@@ -212,14 +227,18 @@
 
           setWidthInteval(intervals, width, defaultWidth, min, max);
         } else {
-          defaultWidth = width;
+
+          isDefined(width.width) && (defaultWidth.width = width.width);
+          isDefined(width.min)   && (defaultWidth.min   = width.min);
+          isDefined(width.max)   && (defaultWidth.max   = width.max);
+
           setWidthInteval(intervals, width, defaultWidth, 0);
         }
       }
     }
 
     // currently we do not take mediaqueries with screen height into account
-    return { 0: intervals };
+    return { 0: resolveMinMax(intervals) };
   }
 
   window.widthPoints = widthPoints;
