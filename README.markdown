@@ -22,7 +22,9 @@ Parses document styles and element inline styles and calculates maximal width wa
             var element = document.querySelector('.wrap');
             var points = widthPoints(element); 
 
-            console.log(points); // returns {0: 200, 100: 100, 200: 200, 1000: 1000, 2000: 200 }
+            // Currently height is not tested from mediaqueries. Returned object has 0 as only height waypoint containing all width waypoints
+            console.log(points); // returns {0: {0: 200, 100: 100, 200: 200, 1000: 1000, 2000: 200 } }
+
         </script>
     </body>
     </html>

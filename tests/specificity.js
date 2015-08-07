@@ -11,9 +11,9 @@ QUnit.test( "class vs id", function(assert) {
   this.stylesheet.innerHTML = style;
   widths = widthPoints(this.wrap);
 
-  assert.ok(widths, "widths object is defined");
-  assert.equal(widths[0], 200, "got the width from css");
-  assert.equal(Object.keys(widths).length, 1, "only one element is on waypoints");
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.equal(widths[0][0], 200, "got the width from css");
 });
 
 QUnit.test( "tag vs class", function(assert) {
@@ -23,9 +23,9 @@ QUnit.test( "tag vs class", function(assert) {
   this.stylesheet.innerHTML = style;
   widths = widthPoints(this.wrap);
 
-  assert.ok(widths, "widths object is defined");
-  assert.equal(widths[0], 200, "got the width from css");
-  assert.equal(Object.keys(widths).length, 1, "only one element is on waypoints");
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.equal(widths[0][0], 200, "got the width from css");
 });
 
 QUnit.test( "!important", function(assert) {
@@ -35,8 +35,8 @@ QUnit.test( "!important", function(assert) {
   this.stylesheet.innerHTML = style;
   widths = widthPoints(this.wrap);
 
-  assert.ok(widths, "widths object is defined");
-  assert.equal(widths[0], 200, "got the width from css");
-  assert.equal(Object.keys(widths).length, 1, "only one element is on waypoints");
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.equal(widths[0][0], 200, "got the width from css");
 });
 

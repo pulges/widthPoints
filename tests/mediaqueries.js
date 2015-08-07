@@ -9,10 +9,10 @@ QUnit.test( "max-width case", function(assert) {
   this.stylesheet.innerHTML = style;
   widths = widthPoints(this.wrap);
 
-  assert.ok(widths, "widths object is defined");
-  assert.equal(Object.keys(widths).length, 2, "two waypoints defined");
-  assert.equal(widths[0], 100, "first waypoint correct from mediaquery");
-  assert.equal(widths[100], 200, "second waypoint (default value) correct starting from max width");
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 2, "only one element is on waypoints");
+  assert.equal(widths[0][0], 100, "first waypoint correct from mediaquery");
+  assert.equal(widths[0][100], 200, "second waypoint (default value) correct starting from max width");
   
 });
 
@@ -23,10 +23,10 @@ QUnit.test( "min-width case", function(assert) {
   this.stylesheet.innerHTML = style;
   widths = widthPoints(this.wrap);
 
-  assert.ok(widths, "widths object is defined");
-  assert.equal(Object.keys(widths).length, 2, "two waypoints defined");
-  assert.equal(widths[0], 200, "first waypoint correct (default value)");
-  assert.equal(widths[100], 100, "second waypoint from mediaquery correct starting from max width");
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 2, "only one element is on waypoints");
+  assert.equal(widths[0][0], 200, "first waypoint correct (default value)");
+  assert.equal(widths[0][100], 100, "second waypoint from mediaquery correct starting from max width");
   
 });
 
@@ -37,10 +37,10 @@ QUnit.test( "min-width and max-width case", function(assert) {
   this.stylesheet.innerHTML = style;
   widths = widthPoints(this.wrap);
 
-  assert.ok(widths, "widths object is defined");
-  assert.equal(Object.keys(widths).length, 3, "three waypoints defined");
-  assert.equal(widths[0], 200, "first waypoint correct from mediaquery");
-  assert.equal(widths[100], 100, "second waypoint (default value) correct starting from max width");
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 3, "only one element is on waypoints");
+  assert.equal(widths[0][0], 200, "first waypoint correct from mediaquery");
+  assert.equal(widths[0][100], 100, "second waypoint (default value) correct starting from max width");
 });
 
 QUnit.test( "multiple mediaqueries - not covering", function(assert) {
@@ -50,14 +50,16 @@ QUnit.test( "multiple mediaqueries - not covering", function(assert) {
   this.stylesheet.innerHTML = style;
   widths = widthPoints(this.wrap);
 
-  assert.ok(widths, "widths object is defined");
-  assert.equal(Object.keys(widths).length, 5, "three waypoints defined");
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 5, "only one element is on waypoints");
   assert.deepEqual(widths, {
-    0: 200,
-    100: 100,
-    200: 200,
-    1000: 1000,
-    2000: 200
+    0: {
+      0: 200,
+      100: 100,
+      200: 200,
+      1000: 1000,
+      2000: 200
+    }
   }, "waypoints correct");
 });
 
@@ -68,13 +70,15 @@ QUnit.test( "multiple mediaqueries - overlapping with both ends defined", functi
   this.stylesheet.innerHTML = style;
   widths = widthPoints(this.wrap);
 
-  assert.ok(widths, "widths object is defined");
-  assert.equal(Object.keys(widths).length, 4, "three waypoints defined");
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 4, "only one element is on waypoints");
   assert.deepEqual(widths, {
-    0: 200,
-    100: 100,
-    200: 1000,
-    1000: 200
+    0: {
+      0: 200,
+      100: 100,
+      200: 1000,
+      1000: 200
+    }
   }, "waypoints correct");
 });
 
@@ -85,13 +89,15 @@ QUnit.test( "multiple mediaqueries - overlapping with both ends defined (reverse
   this.stylesheet.innerHTML = style;
   widths = widthPoints(this.wrap);
 
-  assert.ok(widths, "widths object is defined");
-  assert.equal(Object.keys(widths).length, 4, "three waypoints defined");
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 4, "only one element is on waypoints");
   assert.deepEqual(widths, {
-    0: 200,
-    50: 1000,
-    200: 100,
-    300: 200
+    0: {
+      0: 200,
+      50: 1000,
+      200: 100,
+      300: 200
+    }
   }, "waypoints correct");
 });
 
@@ -102,12 +108,14 @@ QUnit.test( "multiple mediaqueries - overlapping with max-width defined query", 
   this.stylesheet.innerHTML = style;
   widths = widthPoints(this.wrap);
 
-  assert.ok(widths, "widths object is defined");
-  assert.equal(Object.keys(widths).length, 3, "three waypoints defined");
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 3, "only one element is on waypoints");
   assert.deepEqual(widths, {
-    0: 1000,
-    200: 100,
-    1000: 200
+    0: {
+      0: 1000,
+      200: 100,
+      1000: 200
+    }
   }, "waypoints correct");
 });
 
@@ -118,11 +126,13 @@ QUnit.test( "multiple mediaqueries - overlapping with min-width defined query", 
   this.stylesheet.innerHTML = style;
   widths = widthPoints(this.wrap);
 
-  assert.ok(widths, "widths object is defined");
-  assert.equal(Object.keys(widths).length, 3, "three waypoints defined");
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 3, "only one element is on waypoints");
   assert.deepEqual(widths, {
-    0: 200,
-    100: 100,
-    200: 1000
+    0: {
+      0: 200,
+      100: 100,
+      200: 1000
+    }
   }, "waypoints correct");
 });

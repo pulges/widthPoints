@@ -10,8 +10,9 @@ QUnit.test( "basic case", function(assert) {
   this.stylesheet.innerHTML = style;
   widths = widthPoints(this.wrap);
 
-  assert.ok(widths && widths[0] === 100, "got the width from css");
-  assert.equal(Object.keys(widths).length, 1, "only one element is on waypoints");
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.ok(widths && widths[0] && widths[0][0] === 100, "got the width from css");
 });
 
 QUnit.test( "stacked selector", function(assert) {
@@ -21,9 +22,9 @@ QUnit.test( "stacked selector", function(assert) {
   this.stylesheet.innerHTML = style;
   widths = widthPoints(this.wrap);
 
-  assert.ok(widths, "widths object is defined");
-  assert.equal(widths[0], 200, "got the width from css");
-  assert.equal(Object.keys(widths).length, 1, "only one element is on waypoints");
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.equal(widths[0][0], 200, "got the width from css");
 });
 
 QUnit.test( "tag selector", function(assert) {
@@ -33,20 +34,32 @@ QUnit.test( "tag selector", function(assert) {
   this.stylesheet.innerHTML = style;
   widths = widthPoints(this.wrap);
 
-  assert.ok(widths, "widths object is defined");
-  assert.equal(widths[0], 300, "got the width from css");
-  assert.equal(Object.keys(widths).length, 1, "only one element is on waypoints");
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.equal(widths[0][0], 300, "got the width from css");
 });
 
 
-QUnit.test( "overWriting selectors", function(assert) {
+QUnit.test("overWriting selectors", function(assert) {
   var style = ".wrap { width: 100px } .wrap { width: 400px }",
       widths;
 
   this.stylesheet.innerHTML = style;
   widths = widthPoints(this.wrap);
 
-  assert.ok(widths, "widths object is defined");
-  assert.equal(widths[0], 400, "got the width from css");
-  assert.equal(Object.keys(widths).length, 1, "only one element is on waypoints");
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.equal(widths[0][0], 400, "got the width from css");
+});
+
+QUnit.test("max-width", function(assert) {
+  var style = ".wrap { width: 100px } .wrap { width: 400px }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.wrap);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.equal(widths[0][0], 400, "got the width from css");
 });

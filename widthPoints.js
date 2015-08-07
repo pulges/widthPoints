@@ -191,7 +191,8 @@
       }
     }
 
-    return intervals;
+    // currently we do not take mediaqueries with screen height into account
+    return { 0: intervals };
   }
 
   window.widthPoints = widthPoints;
