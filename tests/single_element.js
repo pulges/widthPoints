@@ -1,5 +1,5 @@
 
-QUnit.module( "Test element maximal width from simple css", {
+QUnit.module( "Element maximal width", {
   beforeEach: TestingTools.initSingleElement
 });
 
@@ -86,4 +86,28 @@ QUnit.test("element max-width and width on separate declarations", function(asse
   assert.ok(widths && widths[0], "widths object is defined");
   assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
   assert.equal(widths[0][0], 100, "got the width from css");
+});
+
+QUnit.test("element min-width and width", function(assert) {
+  var style = ".wrap { min-width: 200px; width: 100px; }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.wrap);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.equal(widths[0][0], 200, "got the width from css");
+});
+
+QUnit.test("element min-width and width on separate declarations", function(assert) {
+  var style = ".wrap { min-width: 200px; } .wrap { width: 100px; }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.wrap);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.equal(widths[0][0], 200, "got the width from css");
 });
