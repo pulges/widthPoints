@@ -9,5 +9,12 @@ var TestingTools = {
     this.wrap.className = "wrap";
     this.wrap.setAttribute('id', 'wrap-id');
     this.fixture.appendChild(this.wrap);
+  },
+
+  initWrappedElements: function() {
+    TestingTools.initSingleElement.call(this);
+    this.wrap.innerHTML = '<div class="innerWrap"><div class="testElement"></div></div>';
+    this.innerWrap = this.wrap.querySelector('.innerWrap');
+    this.testElement = this.wrap.querySelector('.testElement');
   }
-}
+};

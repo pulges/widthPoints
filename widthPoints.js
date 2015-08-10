@@ -269,7 +269,8 @@
     }
   }
 
-  function widthPoints(element) {
+  // Returns widths of one element
+  function elementWidthPoints(element) {
     var rules = getElementStylesheet(element),
         inlineRules = element.getAttribute('style'),
         intervals = {},
@@ -310,8 +311,60 @@
       mergeWithInline(intervals, inlineWidths);
     }
 
-    // currently we do not take mediaqueries with screen height into account
-    return { 0: resolveMinMax(intervals) };
+    return resolveMinMax(intervals);
+  }
+
+  function unique(a) {
+    return a.filter(function(value, index, self) {
+      return self.indexOf(value) === index;
+    });
+  }
+
+  // gets widthpoint for first key (if exists)
+  // if does not exist scanns the key list for previous key
+  function getPointForKey(list, keyList) {
+    for (var i = 0, maxi = keyList.length; i < maxi; i++) {
+      if (isDefined(list[keyList[i]])) {
+        return list[i];
+      }
+    }
+  }
+
+  function mergePointsWithParent(widths, parentWidths) {
+    var elKeys = Object.keys(widths),
+        parentKeys = Object.keys(parentWidths),
+        keys = unique(elKeys.concat(parentKeys)),
+        w, pw;
+
+    for (var k = 0, maxk = keys.length; k < maxk; k++) {
+      w = getPointForKey(widths, keys.slice(0, k + 1).reverse());
+      pw = getPointForKey(parentWidths, keys.slice(0, k + 1).reverse());
+      if (isDefined(w) && isDefined(pw)) {
+        widths[keys[k]] = Math.min(w, pw);
+      } else if (isDefined(pw)) {
+        widths[keys[k]] = pw;
+      }
+    }
+  }
+
+  function widthPoints(element) {
+    var widths,
+        prevEl,
+        el = element;
+
+    while (el && el !== document) {
+      if (isDefined(widths) && Object.keys(widths).length > 0) {
+        mergePointsWithParent(widths, elementWidthPoints(el));
+      } else {
+        widths = elementWidthPoints(el);
+      }
+
+       
+      el = el.parentNode;
+    }
+
+    // currently we do not take mediaqueries with screen height into account. using just 0 instead
+    return {0: widths};
   }
 
   window.widthPoints = widthPoints;
