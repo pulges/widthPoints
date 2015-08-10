@@ -111,3 +111,44 @@ QUnit.test("element min-width and width on separate declarations", function(asse
   assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
   assert.equal(widths[0][0], 200, "got the width from css");
 });
+
+QUnit.test("element inline styles width", function(assert) {
+  var style = ".wrap { width: 100px; }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  this.wrap.style.width = "200px";
+
+  widths = widthPoints(this.wrap);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.equal(widths[0][0], 200, "got the width from css");
+});
+
+QUnit.test("width in element inline styles and important in styles", function(assert) {
+  var style = ".wrap { width: 100px !important; }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  this.wrap.style.width = "200px";
+
+  widths = widthPoints(this.wrap);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.equal(widths[0][0], 100, "got the width from css");
+});
+
+QUnit.test("element inline styles with important and width and important in styles", function(assert) {
+  var style = ".wrap { width: 100px !important; }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  this.wrap.style.setProperty("width", "300px", "important");
+  widths = widthPoints(this.wrap);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.equal(widths[0][0], 300, "got the width from css");
+});

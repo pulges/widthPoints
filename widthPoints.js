@@ -23,7 +23,13 @@
   function getSheetRules (stylesheet) {
     var sheet_media = stylesheet.media && stylesheet.media.mediaText;
     // if this sheet is disabled skip it
-    if ( stylesheet.disabled || !stylesheet.cssRules) return [];
+    if ( stylesheet.disabled) return [];
+    try {
+      // can not read external non cross domain stylesheets
+      if (!stylesheet.cssRules) return [];
+    } catch(e) {
+      return [];
+    }
     // if this sheet's media is specified and doesn't match the viewport then skip it
     //if ( sheet_media && sheet_media.length && ! window.matchMedia(sheet_media).matches ) return [];
     // get the style rules of this sheet
@@ -162,32 +168,44 @@
     return (isDefined(w)) ? Object.create(w) : isDefined(intervals[0]) ? Object.create(intervals[0]) : undefined;
   }
 
+  // TODO: should take baseWiths !important into account when overwriting values
+  function assignWidths(newWidths, baseWidths) {
+    var   widths = {};
+
+    widths.width = newWidths && isDefined(newWidths.width) ? newWidths.width : baseWidths ? baseWidths.width : undefined;
+    widths.min   = newWidths && isDefined(newWidths.min)   ? newWidths.min   : baseWidths ? baseWidths.min   : undefined;
+    widths.max   = newWidths && isDefined(newWidths.max)   ? newWidths.max   : baseWidths ? baseWidths.max   : undefined;
+
+    widths.widthImportant = newWidths && isDefined(newWidths.widthImportant) ? newWidths.widthImportant : baseWidths ? baseWidths.widthImportant : undefined;
+    widths.maxImportant   = newWidths && isDefined(newWidths.maxImportant)   ? newWidths.maxImportant   : baseWidths ? baseWidths.maxImportant   : undefined;
+    widths.minImportant   = newWidths && isDefined(newWidths.minImportant)   ? newWidths.minImportant   : baseWidths ? baseWidths.minImportant   : undefined;
+
+    return widths;
+  }
+
   function setWidthInteval(intervals, width, start, end) {
-    var baseWidth = getBaseWidths(intervals, end);
+    var baseWidths = getBaseWidths(intervals, end);
 
     if (!start) {
       start = 0;
     }
 
-    // remove split conflicting entries and insert new
+    // remove split conflicting entries and update base
     for (var i in intervals) {
       if (intervals.hasOwnProperty(i) && parseFloat(i)) {
         if (parseFloat(i) >= start && (!end || parseFloat(i) <= end)) {
-          isDefined(intervals[i].width) && (baseWidth.width = intervals[i].width);
-          isDefined(intervals[i].min) && (baseWidth.min = intervals[i].min);
-          isDefined(intervals[i].max) && (baseWidth.max = intervals[i].max);
+          isDefined(intervals[i].width) && (baseWidths.width = intervals[i].width);
+          isDefined(intervals[i].min) && (baseWidths.min = intervals[i].min);
+          isDefined(intervals[i].max) && (baseWidths.max = intervals[i].max);
           delete intervals[i];
         }
       }
     }
 
-    intervals[start] = {};
-    intervals[start].width = width && isDefined(width.width) ? width.width : baseWidth ? baseWidth.width : undefined;
-    intervals[start].min = width && isDefined(width.min) ? width.min : baseWidth ? baseWidth.min : undefined;
-    intervals[start].max = width && isDefined(width.max) ? width.max : baseWidth ? baseWidth.max : undefined;
+    intervals[start] = assignWidths(width, baseWidths);
 
-    if (end && baseWidth) {
-      intervals[end] = baseWidth;
+    if (end && baseWidths) {
+      intervals[end] = baseWidths;
     }
   }
 
@@ -211,28 +229,57 @@
     return o;
   }
 
+  function getPropertiesFromStyleStr(styleStr) {
+    var wMatch, maxwMatch, minwMatch,
+        w, maxw, minw;
+
+    wMatch = styleStr.match(/([^-]|\s|;|^)width:\s?(\d+)px(\s+(!\s?important))?/);
+    w = wMatch && typeof wMatch[2] !== 'undefined' ? parseFloat(wMatch[2]) : undefined;
+    maxwMatch = styleStr.match(/max-width:\s?(\d+)px(\s+(!\s?important))?/);
+    maxw = maxwMatch && typeof maxwMatch[1] !== 'undefined' ? parseFloat(maxwMatch[1]) : undefined;
+    minwMatch = styleStr.match(/min-width:\s?(\d+)px(\s+(!\s?important))?/);
+    minw = minwMatch && typeof minwMatch[1] !== 'undefined' ? parseFloat(minwMatch[1]) : undefined;
+
+    return {
+      min: minw,
+      minImportant: !!(minwMatch && isDefined(minwMatch[3]) && /^!\s?important$/.test(wMatch[3])),
+      max: maxw,
+      maxImportant: !!(maxwMatch && isDefined(maxwMatch[3]) && /^!\s?important$/.test(wMatch[3])),
+      width: w,
+      widthImportant: !!(wMatch && isDefined(wMatch[4]) && /^!\s?important$/.test(wMatch[4]))
+    };
+  }
+
+  // Merges inline styles on found rules (inlines more important unless rule is !important)
+  function mergeWithInline(intervals, inlineWidths) {
+    if (inlineWidths) {
+      for (var i in intervals) {
+        if (intervals.hasOwnProperty(i)) {
+          if (isDefined(inlineWidths.width) && (inlineWidths.widthImportant || !intervals[i].widthImportant)) {
+            intervals[i].width = inlineWidths.width;
+          }
+          if (isDefined(inlineWidths.max) && (inlineWidths.maxImportant || !intervals[i].maxImportant)) {
+            intervals[i].max = inlineWidths.max;
+          }
+          if (isDefined(inlineWidths.min) && (inlineWidths.minImportant || !intervals[i].minImportant)) {
+            intervals[i].min = inlineWidths.min;
+          }
+        }
+      }
+    }
+  }
+
   function widthPoints(element) {
     var rules = getElementStylesheet(element),
+        inlineRules = element.getAttribute('style'),
         intervals = {},
-        winMinMatch, winMaxMatch, min, max,
-        wMatch, maxwMatch, minwMatch, w, maxw, minw, width,
-        widthIsMaxw = false;
+        widthIsMaxw = false,
+        winMinMatch, winMaxMatch, min, max, widths, inlineWidths;
 
     for (var i = 0, maxi = rules.length; i < maxi; i++) {
       if ((/width:\s?(\d+)px/).test(rules[i].cssText)) {
 
-        wMatch = rules[i].cssText.match(/([^-]|\s|;|^)width:\s?(\d+)px/);
-        w = wMatch && typeof wMatch[2] !== 'undefined' ? parseFloat(wMatch[2]) : undefined;
-        maxwMatch = rules[i].cssText.match(/max-width:\s?(\d+)px/);
-        maxw = maxwMatch && typeof maxwMatch[1] !== 'undefined' ? parseFloat(maxwMatch[1]) : undefined;
-        minwMatch = rules[i].cssText.match(/min-width:\s?(\d+)px/);
-        minw = minwMatch && typeof minwMatch[1] !== 'undefined' ? parseFloat(minwMatch[1]) : undefined;
-
-        width = {
-          min: minw,
-          max: maxw,
-          width: w
-        };
+        widths = getPropertiesFromStyleStr(rules[i].cssText);
 
         if (rules[i].parentRule && rules[i].parentRule.media && rules[i].parentRule.media[0] && (/(max\-width|min\-width)/).test(rules[i].parentRule.media[0])) {
           // Update intervals as mediaquery interval rule
@@ -243,12 +290,17 @@
           min = winMinMatch && winMinMatch[1] ? parseFloat(winMinMatch[1]) : 0;
           max = winMaxMatch && winMaxMatch[1] ? parseFloat(winMaxMatch[1]) : null;
 
-          setWidthInteval(intervals, width, min, max);
+          setWidthInteval(intervals, widths, min, max);
         } else {
           // Update intervals as base rule
-          setWidthInteval(intervals, width, 0);
+          setWidthInteval(intervals, widths, 0);
         }
       }
+    }
+
+    if (inlineRules) {
+      inlineWidths = getPropertiesFromStyleStr(inlineRules);
+      mergeWithInline(intervals, inlineWidths);
     }
 
     // currently we do not take mediaqueries with screen height into account
