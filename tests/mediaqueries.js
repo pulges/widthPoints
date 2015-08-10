@@ -173,7 +173,7 @@ QUnit.test( "element max-width in mediaquery", function(assert) {
   }, "waypoints correct");
 });
 
-QUnit.test( "element max-width in multiple overlapping mediaquerys", function(assert) {
+QUnit.test( "element max-width in multiple overlapping mediaquerys (last hanging edge)", function(assert) {
   var style = ".wrap { width: 300px; } @media screen and (min-width: 100px) and (max-width: 300px) { .wrap { max-width: 200px; } } @media screen and (min-width: 200px) and (max-width: 400px) { .wrap { max-width: 100px; } }",
       widths;
 
@@ -192,7 +192,7 @@ QUnit.test( "element max-width in multiple overlapping mediaquerys", function(as
   }, "waypoints correct");
 });
 
-QUnit.test( "element max-width in multiple overlapping mediaquerys 2", function(assert) {
+QUnit.test( "element max-width in multiple overlapping mediaquerys (contained)", function(assert) {
   var style = ".wrap { width: 300px; } @media screen and (min-width: 100px) and (max-width: 300px) { .wrap { max-width: 200px; } } @media screen and (min-width: 200px) and (max-width: 250px) { .wrap { width: 50px; } }",
       widths;
 
@@ -207,6 +207,25 @@ QUnit.test( "element max-width in multiple overlapping mediaquerys 2", function(
       100: 200,
       200: 50,
       250: 200,
+      300: 300
+    }
+  }, "waypoints correct");
+});
+
+QUnit.test( "element max-width in multiple overlapping mediaquerys (first hanging edge)", function(assert) {
+  var style = ".wrap { width: 300px; } @media screen and (min-width: 100px) and (max-width: 300px) { .wrap { max-width: 200px; } } @media screen and (min-width: 50px) and (max-width: 200px) { .wrap { width: 50px; } }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.wrap);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 4, "only one element is on waypoints");
+  assert.deepEqual(widths, {
+    0: {
+      0: 300,
+      50: 50,
+      200: 200,
       300: 300
     }
   }, "waypoints correct");

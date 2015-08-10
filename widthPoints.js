@@ -145,8 +145,25 @@
     return sortBySpecificity(element, result);
   };
 
-  function setWidthInteval(intervals, width, defaultWidth, start, end) {
-    var baseWidth = Object.create(defaultWidth);
+  // Get current current base parameters for given window width
+  function getBaseWidths(intervals, winWidth) {
+    var diff, ndiff, w;
+
+    for (var i in intervals) {
+      if (intervals.hasOwnProperty(i)) {
+        ndiff = i - winWidth;
+        if (!diff || (ndiff < 0 && ndiff > diff) || (ndiff >= 0 && ndiff < diff)) {
+          w = intervals[i];
+          diff = ndiff;
+        }
+      }
+    }
+
+    return (isDefined(w)) ? Object.create(w) : isDefined(intervals[0]) ? Object.create(intervals[0]) : undefined;
+  }
+
+  function setWidthInteval(intervals, width, start, end) {
+    var baseWidth = getBaseWidths(intervals, end);
 
     if (!start) {
       start = 0;
@@ -165,9 +182,9 @@
     }
 
     intervals[start] = {};
-    intervals[start].width = width && isDefined(width.width) ? width.width : baseWidth && isDefined(baseWidth.width) ? baseWidth.width : undefined;
-    intervals[start].min = width && isDefined(width.min) ? width.min : baseWidth && isDefined(baseWidth.min) ? baseWidth.min : undefined;
-    intervals[start].max = width && isDefined(width.max) ? width.max : baseWidth && isDefined(baseWidth.max) ? baseWidth.max : undefined;
+    intervals[start].width = width && isDefined(width.width) ? width.width : baseWidth ? baseWidth.width : undefined;
+    intervals[start].min = width && isDefined(width.min) ? width.min : baseWidth ? baseWidth.min : undefined;
+    intervals[start].max = width && isDefined(width.max) ? width.max : baseWidth ? baseWidth.max : undefined;
 
     if (end && baseWidth) {
       intervals[end] = baseWidth;
@@ -199,7 +216,6 @@
         intervals = {},
         winMinMatch, winMaxMatch, min, max,
         wMatch, maxwMatch, minwMatch, w, maxw, minw, width,
-        defaultWidth = {},
         widthIsMaxw = false;
 
     for (var i = 0, maxi = rules.length; i < maxi; i++) {
@@ -219,20 +235,18 @@
         };
 
         if (rules[i].parentRule && rules[i].parentRule.media && rules[i].parentRule.media[0] && (/(max\-width|min\-width)/).test(rules[i].parentRule.media[0])) {
+          // Update intervals as mediaquery interval rule
+          
           winMinMatch = rules[i].parentRule.media[0].match(/min\-width:\s?(\d+)px/);
           winMaxMatch = rules[i].parentRule.media[0].match(/max\-width:\s?(\d+)px/);
 
           min = winMinMatch && winMinMatch[1] ? parseFloat(winMinMatch[1]) : 0;
           max = winMaxMatch && winMaxMatch[1] ? parseFloat(winMaxMatch[1]) : null;
 
-          setWidthInteval(intervals, width, defaultWidth, min, max);
+          setWidthInteval(intervals, width, min, max);
         } else {
-
-          isDefined(width.width) && (defaultWidth.width = width.width);
-          isDefined(width.min)   && (defaultWidth.min   = width.min);
-          isDefined(width.max)   && (defaultWidth.max   = width.max);
-
-          setWidthInteval(intervals, width, defaultWidth, 0);
+          // Update intervals as base rule
+          setWidthInteval(intervals, width, 0);
         }
       }
     }
