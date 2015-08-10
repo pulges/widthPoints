@@ -230,3 +230,22 @@ QUnit.test( "element max-width in multiple overlapping mediaquerys (first hangin
     }
   }, "waypoints correct");
 });
+
+QUnit.test( "important in mediaquery", function(assert) {
+  var style = "@media screen and (min-width: 100px) and (max-width: 300px) { .wrap { width: 100px !important; } }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  this.wrap.style.setProperty("width", "300px");
+  widths = widthPoints(this.wrap);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 3, "only one element is on waypoints");
+  assert.deepEqual(widths, {
+    0: {
+      0: 300,
+      100: 100,
+      300: 300
+    }
+  }, "waypoints correct");
+});

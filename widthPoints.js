@@ -276,6 +276,13 @@
         widthIsMaxw = false,
         winMinMatch, winMaxMatch, min, max, widths, inlineWidths;
 
+    if (inlineRules) {
+      inlineWidths = getPropertiesFromStyleStr(inlineRules);
+      if (inlineWidths) {
+        intervals[0] = inlineWidths;
+      }
+    }
+
     for (var i = 0, maxi = rules.length; i < maxi; i++) {
       if ((/width:\s?(\d+)px/).test(rules[i].cssText)) {
 
@@ -298,8 +305,8 @@
       }
     }
 
-    if (inlineRules) {
-      inlineWidths = getPropertiesFromStyleStr(inlineRules);
+    // Apply inline overrride
+    if (inlineWidths) {
       mergeWithInline(intervals, inlineWidths);
     }
 
