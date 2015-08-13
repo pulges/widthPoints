@@ -165,7 +165,7 @@
       }
     }
 
-    return (isDefined(w)) ? Object.create(w) : isDefined(intervals[0]) ? Object.create(intervals[0]) : undefined;
+    return (isDefined(w)) ? Object.create(w) : isDefined(intervals[0]) ? Object.create(intervals[0]) : {0: {width: undefined, min: undefined, max: undefined}};
   }
 
   // TODO: should take baseWiths !important into account when overwriting values
@@ -209,20 +209,24 @@
     }
   }
 
+  // Goes through min max and width aprameters to return the actual width of element
   function resolveMinMax(intervals) {
     var o = {}, w;
     for(var i in intervals) {
       if (intervals.hasOwnProperty(i)) {
-        w = intervals[i].width;
+        if (isDefined(intervals[i])) {
+          w = intervals[i].width;
 
-        if (typeof intervals[i].max !== 'undefined') {
-          w = w ? Math.min(w, intervals[i].max) : intervals[i].max;
+          if (typeof intervals[i].max !== 'undefined') {
+            w = w ? Math.min(w, intervals[i].max) : intervals[i].max;
+          }
+
+          if (typeof intervals[i].min !== 'undefined') {
+            w = w ? Math.max(w, intervals[i].min) : intervals[i].min;
+          }
+        } else {
+          w = undefined;
         }
-
-        if (typeof intervals[i].min !== 'undefined') {
-          w = w ? Math.max(w, intervals[i].min) : intervals[i].min;
-        }
-
         o[i] = w;
       }
     }
@@ -324,8 +328,8 @@
   // if does not exist scanns the key list for previous key
   function getPointForKey(list, keyList) {
     for (var i = 0, maxi = keyList.length; i < maxi; i++) {
-      if (isDefined(list[keyList[i]])) {
-        return list[i];
+      if (+keyList[i] in list) {
+        return list[keyList[i]];
       }
     }
   }
@@ -334,17 +338,25 @@
     var elKeys = Object.keys(widths),
         parentKeys = Object.keys(parentWidths),
         keys = unique(elKeys.concat(parentKeys)),
-        w, pw;
-
+        w, pw,
+        newWidths = {};
+        
     for (var k = 0, maxk = keys.length; k < maxk; k++) {
       w = getPointForKey(widths, keys.slice(0, k + 1).reverse());
       pw = getPointForKey(parentWidths, keys.slice(0, k + 1).reverse());
+
       if (isDefined(w) && isDefined(pw)) {
-        widths[keys[k]] = Math.min(w, pw);
-      } else if (isDefined(pw)) {
-        widths[keys[k]] = pw;
+        newWidths[keys[k]] = Math.min(w, pw);
+      } else if (isDefined(pw) || (keys[k] in parentWidths && !isDefined(w))) {
+        newWidths[keys[k]] = pw;
+      } else if (isDefined(w) && !(keys[k] in widths)) {
+        newWidths[keys[k]] = w;
+      } else {
+        newWidths[keys[k]] = widths[keys[k]];
       }
     }
+
+    return newWidths;
   }
 
   function widthPoints(element) {
@@ -354,7 +366,7 @@
 
     while (el && el !== document) {
       if (isDefined(widths) && Object.keys(widths).length > 0) {
-        mergePointsWithParent(widths, elementWidthPoints(el));
+        widths = mergePointsWithParent(widths, elementWidthPoints(el));
       } else {
         widths = elementWidthPoints(el);
       }

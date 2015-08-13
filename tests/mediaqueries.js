@@ -249,3 +249,58 @@ QUnit.test( "important in mediaquery", function(assert) {
     }
   }, "waypoints correct");
 });
+
+QUnit.test( "mediaquery with undefined size outside", function(assert) {
+  var style = "@media screen and (min-width: 100px) and (max-width: 300px) { .wrap { width: 100px !important; } }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.wrap);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 2, "only one element is on waypoints");
+  assert.deepEqual(widths, {
+    0: {
+      100: 100,
+      300: undefined
+    }
+  }, "waypoints correct");
+});
+
+
+QUnit.test( "mediaquery wrapping with undefined size outside (contained)", function(assert) {
+  var style = "@media screen and (min-width: 100px) and (max-width: 300px) { .wrap { width: 100px !important; } } @media screen and (min-width: 200px) and (max-width: 250px) { .wrap { width: 50px !important; } }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.wrap);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 4, "only one element is on waypoints");
+  assert.deepEqual(widths, {
+    0: {
+      100: 100,
+      200: 50,
+      250: 100,
+      300: undefined
+    }
+  }, "waypoints correct");
+});
+
+QUnit.test( "mediaquery wrapping with undefined size outside (last edge hanging)", function(assert) {
+  var style = "@media screen and (min-width: 100px) and (max-width: 300px) { .wrap { width: 100px !important; } } @media screen and (min-width: 200px) and (max-width: 450px) { .wrap { width: 50px !important; } }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.wrap);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 3, "only one element is on waypoints");
+  assert.deepEqual(widths, {
+    0: {
+      100: 100,
+      200: 50,
+      450: undefined
+    }
+  }, "waypoints correct");
+});

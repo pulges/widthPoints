@@ -152,3 +152,15 @@ QUnit.test("element inline styles with important and width and important in styl
   assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
   assert.equal(widths[0][0], 300, "got the width from css");
 });
+
+
+QUnit.test( "Zero rules case", function(assert) {
+  var style = "",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.wrap);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 0, "no elements is on waypoints");
+});
