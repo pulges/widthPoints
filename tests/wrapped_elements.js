@@ -56,4 +56,36 @@ QUnit.test( "Element has max-width and outer element mediaquery defines width", 
   }, "waypoints correct");
 });
 
+QUnit.test( "Element has max-width and outer element mediaquery defines width", function(assert) {
+  var style = ".wrap { max-width: 200px; } @media screen and (min-width: 100px) and (max-width: 300px) { .wrap { width: 100px; }",
+      widths;
 
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.testElement);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 3, "only one element is on waypoints");
+  assert.deepEqual(widths, {
+    0: {
+      0: 200,
+      100: 100,
+      300: 200
+    }
+  }, "waypoints correct");
+});
+
+QUnit.test( "font size passed", function(assert) {
+  var style = ".wrap { font-size: 2em; } .testElement { width: 2em; }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.testElement);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.deepEqual(widths, {
+    0: {
+      0: 64
+    }
+  }, "waypoints correct");
+});
