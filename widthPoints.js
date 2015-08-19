@@ -165,7 +165,7 @@
       }
     }
 
-    return (isDefined(w)) ? Object.create(w) : isDefined(intervals[0]) ? Object.create(intervals[0]) : {0: {width: undefined, min: undefined, max: undefined}};
+    return (isDefined(w)) ? Object.create(w) : isDefined(intervals[0]) ? Object.create(intervals[0]) : {width: undefined, min: undefined, max: undefined};
   }
 
   // TODO: should take baseWiths !important into account when overwriting values
@@ -231,48 +231,24 @@
     }
   }
 
-  // Goes through min max and width aprameters to return the actual maximal width the element can have
-  function resolveMinMax(intervals) {
-    var o = {}, w;
-    for(var i in intervals) {
-      if (intervals.hasOwnProperty(i)) {
-        if (isDefined(intervals[i])) {
-          w = intervals[i].width;
-
-          if (typeof intervals[i].max !== 'undefined') {
-            w = w ? Math.min(w, intervals[i].max) : intervals[i].max;
-          }
-
-          if (typeof intervals[i].min !== 'undefined') {
-            w = w ? Math.max(w, intervals[i].min) : intervals[i].min;
-          }
-        } else {
-          w = undefined;
-        }
-        o[i] = w;
-      }
-    }
-    return o;
-  }
-
   // Parses style string for defined properties
   function getPropertiesFromStyleStr(styleStr, element) {
     var wMatch, maxwMatch, minwMatch, fSizeMatch,
         w, wUnit, maxw, maxwUnit, minw, minwUnit, fSize, fSizeUnit;
 
-    wMatch = styleStr.match(/([^-]|\s|;|^)width:\s?(\d+)(px|em|rem|vw|vh|%)(\s+(!\s?important))?/);
+    wMatch = styleStr.match(/([^-]|\s|;|^)width:\s?([\d\.]+)(px|em|rem|vw|vh|%)(\s+(!\s?important))?/);
     w = wMatch && isDefined(wMatch[2]) ? parseFloat(wMatch[2]) : undefined;
     wUnit = wMatch && isDefined(wMatch[2]) && isDefined(wMatch[3]) ? wMatch[3] : undefined;
 
-    maxwMatch = styleStr.match(/max-width:\s?(\d+)(px|em|rem|vw|vh|%)(\s+(!\s?important))?/);
+    maxwMatch = styleStr.match(/max-width:\s?([\d\.]+)(px|em|rem|vw|vh|%)(\s+(!\s?important))?/);
     maxw = maxwMatch && isDefined(maxwMatch[1]) ? parseFloat(maxwMatch[1]) : undefined;
     maxwUnit = maxwMatch && isDefined(maxwMatch[1]) && isDefined(maxwMatch[2]) ? maxwMatch[2] : undefined;
 
-    minwMatch = styleStr.match(/min-width:\s?(\d+)(px|em|rem|vw|vh|%)(\s+(!\s?important))?/);
+    minwMatch = styleStr.match(/min-width:\s?([\d\.]+)(px|em|rem|vw|vh|%)(\s+(!\s?important))?/);
     minw = minwMatch && typeof minwMatch[1] !== 'undefined' ? parseFloat(minwMatch[1]) : undefined;
     minwUnit = minwMatch && isDefined(minwMatch[1]) && isDefined(minwMatch[2]) ? minwMatch[2] : undefined;
 
-    fSizeMatch = styleStr.match(/font-size:\s?(\d+)(px|em|rem|vw|vh|%)(\s+(!\s?important))?/);
+    fSizeMatch = styleStr.match(/font-size:\s?([\d\.]+)(px|em|rem|vw|vh|%)(\s+(!\s?important))?/);
     fSize = fSizeMatch && typeof fSizeMatch[1] !== 'undefined' ? parseFloat(fSizeMatch[1]) : undefined;
     fSizeUnit = fSizeMatch && isDefined(fSizeMatch[1]) && isDefined(fSizeMatch[2]) ? fSizeMatch[2] : undefined;
 
@@ -342,15 +318,15 @@
     }
 
     for (var i = 0, maxi = rules.length; i < maxi; i++) {
-      if ((/(width|font-size):\s?(\d+)(px|em|rem|vw|vh|%)/).test(rules[i].cssText)) {
+      if ((/(width|font\-size):\s?([\d\.]+)(px|em|rem|vw|vh|%)/).test(rules[i].cssText)) {
 
         widths = getPropertiesFromStyleStr(rules[i].cssText, element);
 
         if (rules[i].parentRule && rules[i].parentRule.media && rules[i].parentRule.media[0] && (/(max\-width|min\-width)/).test(rules[i].parentRule.media[0])) {
           // Update intervals as mediaquery interval rule
           
-          winMinMatch = rules[i].parentRule.media[0].match(/min\-width:\s?(\d+)px/);
-          winMaxMatch = rules[i].parentRule.media[0].match(/max\-width:\s?(\d+)px/);
+          winMinMatch = rules[i].parentRule.media[0].match(/min\-width:\s?([\d\.]+)px/);
+          winMaxMatch = rules[i].parentRule.media[0].match(/max\-width:\s?([\d\.]+)px/);
 
           min = winMinMatch && winMinMatch[1] ? parseFloat(winMinMatch[1]) : 0;
           max = winMaxMatch && winMaxMatch[1] ? parseFloat(winMaxMatch[1]) : null;
@@ -379,6 +355,7 @@
 
   // gets widthpoint for first key (if exists)
   // if does not exist scanns the key list for previous key
+  // TODO: can be probably unified with getPropsAtKeypoint
   function getPointForKey(list, keyList) {
     for (var i = 0, maxi = keyList.length; i < maxi; i++) {
       if (+keyList[i] in list) {
@@ -419,7 +396,7 @@
           return parseFloat(a) - parseFloat(b);
         });
 
-    for (var key in keys) {
+    for (var key = 0, maxkey = keys.length; key < maxkey; key++) {
       if (list.hasOwnProperty(keys[key])) {
         if (parseFloat(keys[key]) <= parseFloat(targetKey)) {
           size = list[keys[key]];
@@ -457,12 +434,12 @@
           if (isDefined(tree[i][key].fontSize)) {
 
             if (tree[i][key].fontSizeUnit === "em") {
-              // resolve em unit to px
-              parentFontSize = (i > 0) ? getApplyingFontSize(tree[i - 1], key) : undefined;
 
+              // resolve EM unit to PX
+              parentFontSize = (i > 0) ? getApplyingFontSize(tree[i - 1], key) : undefined;
               if (parentFontSize) {
                 // resolve using parent fontsize
-                tree[i][key].fontSize = tree[i][key].fontSize * parentFontSize;
+                tree[i][key].fontSize = tree[i][key].fontSize * parentFontSize.fontSize;
                 tree[i][key].fontSizeUnit = "px";
                 tree[i][key].fontSizeImportant = parentFontSize.fontSizeImportant;
               } else {
@@ -471,6 +448,35 @@
                 tree[i][key].fontSizeUnit = "px";
                 tree[i][key].fontSizeImportant = false;
               }
+
+            } else if (tree[i][key].fontSizeUnit === "rem") {
+
+              // % to PX
+              tree[i][key].fontSize = tree[i][key].fontSize * baseFontSize;
+              tree[i][key].fontSizeUnit = "px";
+
+            } else if (tree[i][key].fontSizeUnit === "%") {
+
+              // resolve EM unit to PX
+              parentFontSize = (i > 0) ? getApplyingFontSize(tree[i - 1], key) : undefined;
+              if (parentFontSize) {
+                // resolve using parent fontsize
+                tree[i][key].fontSize = (tree[i][key].fontSize / 100) * parentFontSize.fontSize;
+                tree[i][key].fontSizeUnit = "px";
+                tree[i][key].fontSizeImportant = parentFontSize.fontSizeImportant;
+              } else {
+                // resolve using size from documentElement
+                tree[i][key].fontSize = (tree[i][key].fontSize / 100) * baseFontSize;
+                tree[i][key].fontSizeUnit = "px";
+                tree[i][key].fontSizeImportant = false;
+              }
+
+            } else if (tree[i][key].fontSizeUnit === "pt") {
+
+              // PT to PX (will have to be improved o run some tests if found that some browsers actually take dpi into account)
+              tree[i][key].fontSize = tree[i][key].fontSize * (4/3);
+              tree[i][key].fontSizeUnit = "px";
+              
             }
 
           } else {
@@ -514,22 +520,77 @@
     return tree;
   }
 
+  function getAllKeypoints(tree) {
+    var keyPoints = [];
+
+    for (var i = 0, maxi = tree.length; i < maxi; i++) {
+      keyPoints = keyPoints.concat(Object.keys(tree[i]));
+    }
+
+    return unique(keyPoints).sort(function(a,b) {
+      return parseFloat(a) - parseFloat(b);
+    });
+  }
+
+  function getPropsAtKeypoint(list, targetKey) {
+    var w, k, maxk, props, key,
+      // Ascending sorted keys of tree level
+      // Object keys are not quaranteed to be sorted and order kept
+      keys = Object.keys(list).sort(function(a,b) {
+        return parseFloat(a) - parseFloat(b);
+      });
+
+
+    for (k = 0, maxk = keys.length; k < maxk; k++) {
+      key = parseFloat(keys[k]);
+      if (key <= parseFloat(targetKey)) {
+        props = list[key];
+      } else {
+        return props;
+      }
+    }
+    return props;
+  }
+
+  function flattenTree(tree) {
+    var keys = getAllKeypoints(tree),
+        flatTree = {},
+        props, list, w, maxw;
+    
+    for (var i = 0, maxi = keys.length; i < maxi; i++) {
+
+      w = undefined;
+      maxw = undefined;
+
+      // reverse lookup in tree as searched element is highest priority
+      for (var j = tree.length; j--;) {
+        props = getPropsAtKeypoint(tree[j], keys[i]);
+        if (props) {
+          if (isDefined(props.width)) {
+            if (isDefined(props.max)) {
+              w = Math.max(Math.min(props.width, props.max), props.min || 0);
+            } else {
+              w = Math.max(props.width, props.min || 0);
+            }
+            break;
+          } else {
+            if (isDefined(props.max) && (!maxw || maxw > props.max)) {
+              maxw = props.max;
+            }
+          }
+        }
+      }
+
+      flatTree[keys[i]] = isDefined(w) ? w : maxw;
+
+    }
+    return flatTree;
+  }
+
   function resolveTree(tree) {
+
     var pxTree = resolveUnits(tree),
-        widthsResolvedTree = [],
-        flatTree = {};
-
-    // Resolve min/max
-    for (var i = tree.length; i--;) {
-      widthsResolvedTree[i] = resolveMinMax(pxTree[i]);
-    }
-
-    flatTree = widthsResolvedTree[0];
-
-    // flatten with child layer overriding parent
-    for (var j = 1, maxj = widthsResolvedTree.length; j < maxj; j++) {
-      flatTree = mergePointsWithParent(widthsResolvedTree[j], widthsResolvedTree[j - 1]);
-    }
+        flatTree = flattenTree(pxTree);
 
     return flatTree || [];
   }

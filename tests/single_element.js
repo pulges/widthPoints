@@ -40,7 +40,7 @@ QUnit.test( "tag selector", function(assert) {
 });
 
 
-QUnit.test("overWriting selectors", function(assert) {
+QUnit.test("over writing selectors", function(assert) {
   var style = ".wrap { width: 100px } .wrap { width: 400px }",
       widths;
 
