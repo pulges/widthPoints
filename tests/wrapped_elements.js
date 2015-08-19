@@ -136,8 +136,8 @@ QUnit.test( "parent element font size handled together with base", function(asse
   }, "waypoints correct");
 });
 
-QUnit.test( "parent element font size handled in % together with base", function(assert) {
-  var style = ".wrap { max-width: 1em; } .innerWrap { font-size: 50%; } .testElement { max-width: 3em; }",
+QUnit.test( "% together with parent width in px", function(assert) {
+  var style = ".innerWrap { width: 500px; } .testElement { width: 50%; }",
       widths;
 
   this.stylesheet.innerHTML = style;
@@ -147,7 +147,23 @@ QUnit.test( "parent element font size handled in % together with base", function
   assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
   assert.deepEqual(widths, {
     0: {
-      0: 16
+      0: 250
+    }
+  }, "waypoints correct");
+});
+
+QUnit.test( "% together with parent width in %", function(assert) {
+  var style = ".innerWrap { width: 50%; } .testElement { width: 50%; }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.testElement);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.deepEqual(widths, {
+    0: {
+      0: "25%"
     }
   }, "waypoints correct");
 });

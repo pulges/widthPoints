@@ -389,6 +389,7 @@
     return newWidths;
   }
 
+
   function getApplyingFontSize(list, targetKey) {
     var size,
         // Object keys are not quaranteed to be sorted and order kept
@@ -414,7 +415,7 @@
         parentFontSize,
         tree = [],
         widthProps = ["width", "min", "max"],
-        prop;
+        prop, widthResult;
 
     // Clone tree
     for (var j = 0, maxj = otree.length; j < maxj; j++) {
@@ -476,7 +477,7 @@
               // PT to PX (will have to be improved o run some tests if found that some browsers actually take dpi into account)
               tree[i][key].fontSize = tree[i][key].fontSize * (4/3);
               tree[i][key].fontSizeUnit = "px";
-              
+
             }
 
           } else {
@@ -506,10 +507,16 @@
           for (var p = widthProps.length; p--;) {
             prop = widthProps[p];
             if (isDefined(tree[i][key][prop])) {
+              
               if (tree[i][key][prop + "Unit"] === "em") {
                 tree[i][key][prop] = tree[i][key][prop] * tree[i][key].fontSize;
                 tree[i][key][prop + "Unit"] = "px";
               }
+
+              if (tree[i][key][prop + "Unit"] === "%") {
+                // Do nothing, lets convert later
+              }
+
             }
           }
 
@@ -555,24 +562,34 @@
   function flattenTree(tree) {
     var keys = getAllKeypoints(tree),
         flatTree = {},
-        props, list, w, maxw;
+        props, list, w, maxw, wPr, maxwPr;
     
     for (var i = 0, maxi = keys.length; i < maxi; i++) {
 
       w = undefined;
       maxw = undefined;
+      wPr = undefined;
+      maxwPr = undefined;
 
       // reverse lookup in tree as searched element is highest priority
       for (var j = tree.length; j--;) {
         props = getPropsAtKeypoint(tree[j], keys[i]);
         if (props) {
+
           if (isDefined(props.width)) {
-            if (isDefined(props.max)) {
-              w = Math.max(Math.min(props.width, props.max), props.min || 0);
-            } else {
-              w = Math.max(props.width, props.min || 0);
+            if (props.widthUnit === 'px') {
+              if (isDefined(props.max)) {
+                w = Math.max(Math.min(props.width, props.max), props.min || 0);
+              } else {
+                w = Math.max(props.width, props.min || 0);
+              }
+              if (isDefined(wPr)) {
+                w *= (wPr/100);
+              }
+              break;
+            } else if (props.widthUnit === '%') {
+              wPr = props.width;
             }
-            break;
           } else {
             if (isDefined(props.max) && (!maxw || maxw > props.max)) {
               maxw = props.max;
@@ -581,8 +598,12 @@
         }
       }
 
-      flatTree[keys[i]] = isDefined(w) ? w : maxw;
-
+      if (!isDefined(w) && isDefined(wPr) && !isDefined(maxw)) {
+        flatTree[keys[i]] = wPr + '%';
+      } else {
+        flatTree[keys[i]] = isDefined(w) ? w : maxw;
+      }
+      
     }
     return flatTree;
   }
