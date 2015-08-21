@@ -588,7 +588,7 @@
               }
               break;
             } else if (props.widthUnit === '%') {
-              wPr = props.width;
+              wPr = isDefined(wPr) ? wPr * (props.width / 100) : props.width;
             }
           } else {
             if (isDefined(props.max) && (!maxw || maxw > props.max)) {

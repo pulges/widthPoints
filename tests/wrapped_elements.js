@@ -153,7 +153,7 @@ QUnit.test( "% together with parent width in px", function(assert) {
 });
 
 QUnit.test( "% together with parent width in %", function(assert) {
-  var style = ".innerWrap { width: 50%; } .testElement { width: 50%; }",
+  var style = ".wrap { width: 50%; } .testElement { width: 50%; }",
       widths;
 
   this.stylesheet.innerHTML = style;
