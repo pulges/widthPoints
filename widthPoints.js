@@ -672,11 +672,10 @@
     }
 
     for (var i in wPoints) {
-
       if (wPoints.hasOwnProperty(i)) {
         if (!isDefined(wPoints[i])) {
 
-          if (i === 0) {
+          if (parseFloat(i) === 0) {
             sizesArr.push('100vw');
           } else {
             sizesArr.push('(min-width: ' + i + 'px) ' + '100vw');
@@ -685,7 +684,7 @@
         } else if (typeof wPoints[i] === 'string') {
 
           pri = parseFloat(wPoints[i]);
-          if (i === 0) {
+          if (parseFloat(i) === 0) {
             sizesArr.push(pri + 'vw');
           } else {
             sizesArr.push('(min-width: ' + i + 'px) ' + pri + 'vw');
@@ -693,8 +692,8 @@
 
         } else {
 
-          if (i === 0) {
-            sizesArr.push(wpoints[i] + 'px');
+          if (parseFloat(i) === 0) {
+            sizesArr.push(wPoints[i] + 'px');
           } else {
             sizesArr.push('(min-width: ' + i + 'px) ' + wPoints[i] + 'px');
           }
