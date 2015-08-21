@@ -167,3 +167,84 @@ QUnit.test( "% together with parent width in %", function(assert) {
     }
   }, "waypoints correct");
 });
+
+QUnit.test( "% together with parent in p% and outer wrap width in px ", function(assert) {
+  var style = ".wrap { width: 400px } .innerWrap { width: 50%; } .testElement { width: 50%; }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.testElement);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.deepEqual(widths, {
+    0: {
+      0: 100
+    }
+  }, "waypoints correct");
+});
+
+
+QUnit.test( "% together with parent max-width in %", function(assert) {
+  var style = ".wrap { width: 50%; } .testElement { max-width: 50%; }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.testElement);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.deepEqual(widths, {
+    0: {
+      0: "25%"
+    }
+  }, "waypoints correct");
+});
+
+QUnit.test( "% mix", function(assert) {
+  var style = ".wrap { width: 20%; } .innerWrap { max-width: 50%; } .testElement { width: 50%; }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.testElement);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.deepEqual(widths, {
+    0: {
+      0: "5%"
+    }
+  }, "waypoints correct");
+});
+
+QUnit.test( "% , width and max-width mix 1", function(assert) {
+  var style = ".wrap { width: 400px; } .innerWrap { width: 50%; } .testElement { max-width: 50%; }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.testElement);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.deepEqual(widths, {
+    0: {
+      0: 100
+    }
+  }, "waypoints correct");
+});
+
+QUnit.test( "% , width and max-width mix 2", function(assert) {
+  var style = ".wrap { max-width: 400px; } .innerWrap { max-width: 50%; } .testElement { width: 50%; }",
+      widths;
+
+  this.stylesheet.innerHTML = style;
+  widths = widthPoints(this.testElement);
+
+  assert.ok(widths && widths[0], "widths object is defined");
+  assert.equal(Object.keys(widths[0]).length, 1, "only one element is on waypoints");
+  assert.deepEqual(widths, {
+    0: {
+      0: 100
+    }
+  }, "waypoints correct");
+});

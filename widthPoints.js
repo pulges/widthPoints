@@ -586,20 +586,41 @@
               if (isDefined(wPr)) {
                 w *= (wPr/100);
               }
+              if (isDefined(maxwPr)) {
+                w *= (maxwPr/100);
+              }
               break;
             } else if (props.widthUnit === '%') {
               wPr = isDefined(wPr) ? wPr * (props.width / 100) : props.width;
             }
-          } else {
-            if (isDefined(props.max) && (!maxw || maxw > props.max)) {
-              maxw = props.max;
+          } else if (isDefined(props.max)) {
+            if (props.maxUnit === 'px') {
+              if (!maxw || maxw > props.max) {
+                maxw = props.max;
+                if (isDefined(wPr)) {
+                  maxw *= (wPr/100);
+                }
+                if (isDefined(maxwPr)) {
+                  maxw *= (maxwPr/100);
+                }
+              }
+            } else if (props.maxUnit === '%') {
+              if (!maxw) {
+                maxwPr = isDefined(maxwPr) ? maxwPr * (props.max / 100) : props.max;
+              }
             }
           }
         }
       }
 
-      if (!isDefined(w) && isDefined(wPr) && !isDefined(maxw)) {
-        flatTree[keys[i]] = wPr + '%';
+      if (!isDefined(w) && (isDefined(wPr) || isDefined(maxwPr)) && !isDefined(maxw)) {
+        if(isDefined(wPr) && isDefined(maxwPr)) {
+          flatTree[keys[i]] = (wPr * (maxwPr / 100)) + '%';
+        } else if (isDefined(wPr)) {
+          flatTree[keys[i]] = wPr + '%';
+        } else {
+          flatTree[keys[i]] = maxwPr + '%';
+        }
       } else {
         flatTree[keys[i]] = isDefined(w) ? w : maxw;
       }
