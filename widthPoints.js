@@ -1,3 +1,4 @@
+/* version 0.0.1 */
 (function() {
 
   // Based on https://gist.github.com/ssafejava/6605832
@@ -658,5 +659,53 @@
     return {0: widths};
   }
 
+  function calculateSizesAttr(element) {
+    var wPoints = widthPoints(element)[0],
+        sizesArr = [], pri;
+
+    if (!isDefined(wPoints)) {
+      return "100vw";
+    }
+
+    if (!wPoints[0]) {
+      sizesArr.push('100vw');
+    }
+
+    for (var i in wPoints) {
+
+      if (wPoints.hasOwnProperty(i)) {
+        if (!isDefined(wPoints[i])) {
+
+          if (i === 0) {
+            sizesArr.push('100vw');
+          } else {
+            sizesArr.push('(min-width: ' + i + 'px) ' + '100vw');
+          }
+
+        } else if (typeof wPoints[i] === 'string') {
+
+          pri = parseFloat(wPoints[i]);
+          if (i === 0) {
+            sizesArr.push(pri + 'vw');
+          } else {
+            sizesArr.push('(min-width: ' + i + 'px) ' + pri + 'vw');
+          }
+
+        } else {
+
+          if (i === 0) {
+            sizesArr.push(wpoints[i] + 'px');
+          } else {
+            sizesArr.push('(min-width: ' + i + 'px) ' + wPoints[i] + 'px');
+          }
+
+        }
+      }
+    }
+    return sizesArr.join(', ');
+  }
+
   window.widthPoints = widthPoints;
+  window.calculateSizesAttr = calculateSizesAttr;
 })();
+
